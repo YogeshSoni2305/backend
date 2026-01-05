@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EcoGuard – AI Forest Monitoring</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg: #0b1320;
+      --panel: #020617;
+      --border: #1e293b;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #facc15;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
+    }
+
+    header {
+      padding: 25px;
+      text-align: center;
+      background: linear-gradient(180deg, #020617, #020617aa);
+      border-bottom: 1px solid var(--border);
+    }
+
+    main {
+      max-width: 1200px;
+      margin: auto;
+      padding: 30px;
+      display: grid;
+      gap: 30px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      animation: fadeIn 0.4s ease;
+    }
+
+    h2 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    button {
+      background: var(--green);
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      color: #052e16;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #16a34a;
+      transform: translateY(-1px);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin: 15px 0;
+    }
+
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .loader {
+      height: 14px;
+      background: linear-gradient(90deg, #020617, #1e293b, #020617);
+      background-size: 200% 100%;
+      animation: pulse 1.2s infinite;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    th {
+      color: var(--muted);
+    }
+
+    .high { color: var(--red); font-weight: bold; }
+    .medium { color: var(--yellow); font-weight: bold; }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      opacity: 0.6;
+    }
+
+    @keyframes pulse {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🌿 EcoGuard</h1>
+  <p>Real-time AI Forest Intelligence Dashboard</p>
+</header>
+
+<main>
+
+  <!-- Wildfire -->
+  <section class="card">
+    <h2>🔥 Wildfire Detection</h2>
+    <button onclick="loadWildfires()">Load Data</button>
+
+    <div id="wildfireSummary" class="summary"></div>
+    <div id="wildfireContent"></div>
+  </section>
+
+  <!-- Deforestation -->
+  <section class="card">
+    <h2>🌲 Deforestation Analysis</h2>
+    <button onclick="loadDeforestation()">Load Data</button>
+    <div id="deforestationContent"></div>
+  </section>
+
+</main>
+
+<footer>EcoGuard © 2026</footer>
+
+<script>
+  const API = "http://127.0.0.1:8000/api";
+
+  function showLoading(id) {
+    document.getElementById(id).innerHTML = `
+      <div class="loader"></div>
+      <div class="loader"></div>
+      <div class="loader"></div>
+    `;
+  }
+
+  async function loadWildfires() {
+    showLoading("wildfireSummary");
+    showLoading("wildfireContent");
+
+    const res = await fetch(API + "/wildfires");
+    const data = await res.json();
+
+    document.getElementById("wildfireSummary").innerHTML = `
+      <div class="box">🌍<br><b>${data.country}</b></div>
+      <div class="box">🔥<br><b>${data.count} Fires</b></div>
+      <div class="box">⚠️<br>${data.alert}</div>
+    `;
+
+    let table = `
+      <table>
+        <tr>
+          <th>#</th>
+          <th>Severity</th>
+          <th>Brightness</th>
+          <th>Date</th>
+          <th>Lat</th>
+          <th>Lon</th>
+        </tr>
+    `;
+
+    data.geojson.features.forEach((f, i) => {
+      table += `
+        <tr>
+          <td>${i + 1}</td>
+          <td class="${f.properties.severity}">
+            ${f.properties.severity.toUpperCase()}
+          </td>
+          <td>${f.properties.brightness}</td>
+          <td>${f.properties.date}</td>
+          <td>${f.geometry.coordinates[1]}</td>
+          <td>${f.geometry.coordinates[0]}</td>
+        </tr>
+      `;
+    });
+
+    table += "</table>";
+    document.getElementById("wildfireContent").innerHTML = table;
+  }
+
+  async function loadDeforestation() {
+    showLoading("deforestationContent");
+
+    const res = await fetch(API + "/deforestation");
+    const d = await res.json();
+
+    document.getElementById("deforestationContent").innerHTML = `
+      <div class="summary">
+        <div class="box">📍<br>${d.region}</div>
+        <div class="box">📉<br>${d.forest_loss_percent}% Loss</div>
+        <div class="box">⚠️<br>${d.risk_level} Risk</div>
+      </div>
+
+      <p><b>Satellite:</b> ${d.satellite}</p>
+      <p><b>Method:</b> ${d.method}</p>
+      <p><b>Period:</b> ${d.start_year} – ${d.end_year}</p>
+      <p><b>Status:</b> ${d.status}</p>
+      <p><b>Recommendation:</b> ${d.recommendation}</p>
+      <p style="opacity:0.7;"><i>${d.note}</i></p>
+    `;
+  }
+</script>
+
+</body>
+</html>
