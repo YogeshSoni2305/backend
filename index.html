@@ -2,132 +2,219 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>EcoGuard – AI Forest Monitoring</title>
+  <title>EcoGuard – AI Forest Intelligence</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <style>
     :root {
-      --bg: #0b1320;
-      --panel: #020617;
-      --border: #1e293b;
+      --bg: #020617;
+      --card: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
       --green: #22c55e;
       --red: #ef4444;
       --yellow: #facc15;
-      --text: #e5e7eb;
-      --muted: #94a3b8;
+      --blur: blur(14px);
     }
+
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      background: var(--bg);
+      font-family: Inter, system-ui, sans-serif;
+      background: radial-gradient(circle at top, #020617, #000);
       color: var(--text);
-      font-family: Inter, Arial, sans-serif;
+      overflow-x: hidden;
     }
 
+    /* ---------- FLOATING NAV ---------- */
     header {
-      padding: 25px;
-      text-align: center;
-      background: linear-gradient(180deg, #020617, #020617aa);
-      border-bottom: 1px solid var(--border);
-    }
-
-    main {
-      max-width: 1200px;
-      margin: auto;
-      padding: 30px;
-      display: grid;
-      gap: 30px;
-    }
-
-    .card {
-      background: var(--panel);
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      backdrop-filter: var(--blur);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      animation: fadeIn 0.4s ease;
-    }
-
-    h2 {
-      margin-top: 0;
+      border-radius: 999px;
+      padding: 8px 14px;
       display: flex;
-      align-items: center;
-      gap: 10px;
+      gap: 6px;
+      z-index: 100;
     }
 
-    button {
-      background: var(--green);
+    header button {
+      background: transparent;
       border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      color: #052e16;
+      color: var(--muted);
+      padding: 8px 18px;
+      border-radius: 999px;
       cursor: pointer;
-      font-weight: bold;
-      transition: 0.2s;
-    }
-
-    button:hover {
-      background: #16a34a;
-      transform: translateY(-1px);
-    }
-
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 15px;
-      margin: 15px 0;
-    }
-
-    .box {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-    }
-
-    .loader {
-      height: 14px;
-      background: linear-gradient(90deg, #020617, #1e293b, #020617);
-      background-size: 200% 100%;
-      animation: pulse 1.2s infinite;
-      border-radius: 6px;
-      margin: 10px 0;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
       font-size: 14px;
     }
 
-    th, td {
-      padding: 8px;
-      border-bottom: 1px solid var(--border);
+    header button.active {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+
+    /* ---------- PAGE SYSTEM ---------- */
+    .page {
+      display: none;
+      min-height: 100vh;
+      padding: 140px 24px 80px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .page.active {
+      display: block;
+      animation: fadeIn 0.6s ease;
+    }
+
+    /* ---------- HERO ---------- */
+    .hero {
+      text-align: center;
+      max-width: 760px;
+      margin: auto;
+    }
+
+    .hero h1 {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    .hero button {
+      background: var(--green);
+      color: #052e16;
+      padding: 14px 36px;
+      border-radius: 999px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 20px 40px rgba(34,197,94,0.35);
+    }
+
+    /* ---------- FEATURE CARDS ---------- */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: 24px;
+      margin-top: 80px;
+    }
+
+    .feature {
+      background: var(--card);
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
       text-align: center;
     }
 
-    th {
+    .feature h3 {
+      margin: 14px 0 8px;
+      font-size: 16px;
+    }
+
+    .feature p {
+      font-size: 14px;
       color: var(--muted);
     }
 
-    .high { color: var(--red); font-weight: bold; }
-    .medium { color: var(--yellow); font-weight: bold; }
+    /* ---------- DASHBOARD ---------- */
+    .dash-header {
+      margin-bottom: 40px;
+    }
+
+    .dash-header h2 {
+      font-size: 34px;
+      margin-bottom: 8px;
+    }
+
+    .dash-header p {
+      color: var(--muted);
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .kpi {
+      background: var(--card);
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+    }
+
+    .kpi span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .kpi strong {
+      display: block;
+      font-size: 32px;
+      margin-top: 6px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      backdrop-filter: var(--blur);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 24px;
+    }
+
+    #wildfireMap {
+      height: 520px;
+      border-radius: 16px;
+      margin-top: 14px;
+    }
 
     footer {
       text-align: center;
-      padding: 15px;
-      opacity: 0.6;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 40px 0 20px;
     }
 
-    @keyframes pulse {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
-    }
+    .high { color: var(--red); }
+    .medium { color: var(--yellow); }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: none; }
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 42px; }
     }
   </style>
 </head>
@@ -135,108 +222,149 @@
 <body>
 
 <header>
-  <h1>🌿 EcoGuard</h1>
-  <p>Real-time AI Forest Intelligence Dashboard</p>
+  <button class="active" onclick="showPage('home', this)">Home</button>
+  <button onclick="showPage('dashboard', this)">Dashboard</button>
 </header>
 
-<main>
+<!-- ================= HOME ================= -->
+<section id="home" class="page active">
+  <div class="hero">
+    <h1>EcoGuard</h1>
+    <p>
+      Real-time wildfire and deforestation monitoring using satellite data
+      and AI-driven environmental intelligence.
+    </p>
+    <button onclick="showPage('dashboard')">Open Dashboard</button>
+  </div>
 
-  <!-- Wildfire -->
-  <section class="card">
-    <h2>🔥 Wildfire Detection</h2>
-    <button onclick="loadWildfires()">Load Data</button>
+  <div class="features">
+    <div class="feature">
+      <h3>🛰 Satellite-Backed</h3>
+      <p>NASA FIRMS & Sentinel-2 powered detection</p>
+    </div>
+    <div class="feature">
+      <h3>🔥 Real-Time Fires</h3>
+      <p>Near real-time wildfire hotspot detection</p>
+    </div>
+    <div class="feature">
+      <h3>🌍 Climate-Scale</h3>
+      <p>Designed for regional & global monitoring</p>
+    </div>
+  </div>
+</section>
 
-    <div id="wildfireSummary" class="summary"></div>
-    <div id="wildfireContent"></div>
-  </section>
+<!-- ================= DASHBOARD ================= -->
+<section id="dashboard" class="page">
 
-  <!-- Deforestation -->
-  <section class="card">
-    <h2>🌲 Deforestation Analysis</h2>
-    <button onclick="loadDeforestation()">Load Data</button>
-    <div id="deforestationContent"></div>
-  </section>
+  <div class="dash-header">
+    <h2>Forest Monitoring – India</h2>
+    <p>Live satellite intelligence & environmental risk overview</p>
+  </div>
 
-</main>
+  <div class="kpis">
+    <div class="kpi">
+      <span>Active Wildfires</span>
+      <strong id="fireCount" class="high">—</strong>
+    </div>
+    <div class="kpi">
+      <span>Forest Loss</span>
+      <strong class="medium">7.4%</strong>
+    </div>
+    <div class="kpi">
+      <span>Risk Level</span>
+      <strong class="medium">Medium</strong>
+    </div>
+    <div class="kpi">
+      <span>Satellite</span>
+      <strong>Sentinel-2</strong>
+    </div>
+  </div>
 
-<footer>EcoGuard © 2026</footer>
+  <div class="layout">
+    <div class="card">
+      <h3>🔥 Wildfire Hotspots</h3>
+      <div id="wildfireMap"></div>
+    </div>
+
+    <div class="card">
+      <h3>🌲 Deforestation Summary</h3>
+      <p><b>Region:</b> Central India</p>
+      <p><b>Status:</b> ⚠️ Deforestation Detected</p>
+      <p style="color:var(--muted)">
+        Increased monitoring and restriction of logging activity recommended.
+      </p>
+    </div>
+  </div>
+
+</section>
+
+<footer>
+  EcoGuard © 2026 · Satellite Intelligence for the Planet
+</footer>
 
 <script>
-  const API = "http://127.0.0.1:8000/api";
+const API = "http://127.0.0.1:8000/api";
+let wildfireMap = null;
 
-  function showLoading(id) {
-    document.getElementById(id).innerHTML = `
-      <div class="loader"></div>
-      <div class="loader"></div>
-      <div class="loader"></div>
-    `;
+function showPage(id, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+
+  document.querySelectorAll("header button").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+
+  if (id === "dashboard") {
+    initMap();
+    plotWildfires();
   }
+}
 
-  async function loadWildfires() {
-    showLoading("wildfireSummary");
-    showLoading("wildfireContent");
-
-    const res = await fetch(API + "/wildfires");
-    const data = await res.json();
-
-    document.getElementById("wildfireSummary").innerHTML = `
-      <div class="box">🌍<br><b>${data.country}</b></div>
-      <div class="box">🔥<br><b>${data.count} Fires</b></div>
-      <div class="box">⚠️<br>${data.alert}</div>
-    `;
-
-    let table = `
-      <table>
-        <tr>
-          <th>#</th>
-          <th>Severity</th>
-          <th>Brightness</th>
-          <th>Date</th>
-          <th>Lat</th>
-          <th>Lon</th>
-        </tr>
-    `;
-
-    data.geojson.features.forEach((f, i) => {
-      table += `
-        <tr>
-          <td>${i + 1}</td>
-          <td class="${f.properties.severity}">
-            ${f.properties.severity.toUpperCase()}
-          </td>
-          <td>${f.properties.brightness}</td>
-          <td>${f.properties.date}</td>
-          <td>${f.geometry.coordinates[1]}</td>
-          <td>${f.geometry.coordinates[0]}</td>
-        </tr>
-      `;
-    });
-
-    table += "</table>";
-    document.getElementById("wildfireContent").innerHTML = table;
+function initMap() {
+  if (!wildfireMap) {
+    wildfireMap = L.map("wildfireMap").setView([22, 79], 5);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(wildfireMap);
   }
+}
 
-  async function loadDeforestation() {
-    showLoading("deforestationContent");
+async function plotWildfires() {
+  const res = await fetch(API + "/wildfires");
+  const data = await res.json();
 
-    const res = await fetch(API + "/deforestation");
-    const d = await res.json();
+  document.getElementById("fireCount").innerText = data.count;
 
-    document.getElementById("deforestationContent").innerHTML = `
-      <div class="summary">
-        <div class="box">📍<br>${d.region}</div>
-        <div class="box">📉<br>${d.forest_loss_percent}% Loss</div>
-        <div class="box">⚠️<br>${d.risk_level} Risk</div>
-      </div>
+  wildfireMap.eachLayer(layer => {
+    if (layer instanceof L.CircleMarker) wildfireMap.removeLayer(layer);
+  });
 
-      <p><b>Satellite:</b> ${d.satellite}</p>
-      <p><b>Method:</b> ${d.method}</p>
-      <p><b>Period:</b> ${d.start_year} – ${d.end_year}</p>
-      <p><b>Status:</b> ${d.status}</p>
-      <p><b>Recommendation:</b> ${d.recommendation}</p>
-      <p style="opacity:0.7;"><i>${d.note}</i></p>
-    `;
-  }
+  const bounds = [];
+
+  data.geojson.features.forEach(f => {
+    const [lon, lat] = f.geometry.coordinates;
+    const sev = f.properties.severity;
+
+    const color =
+      sev === "high" ? "#ef4444" :
+      sev === "medium" ? "#facc15" :
+      "#22c55e";
+
+    bounds.push([lat, lon]);
+
+    L.circleMarker([lat, lon], {
+      radius: sev === "high" ? 7 : 5,
+      fillColor: color,
+      color: "#000",
+      fillOpacity: 0.75
+    })
+    .bindPopup(`
+      <b>Severity:</b> ${sev.toUpperCase()}<br>
+      <b>Brightness:</b> ${f.properties.brightness}<br>
+      <b>Date:</b> ${f.properties.date}
+    `)
+    .addTo(wildfireMap);
+  });
+
+  if (bounds.length) wildfireMap.fitBounds(bounds, { padding: [40,40] });
+}
 </script>
 
 </body>
